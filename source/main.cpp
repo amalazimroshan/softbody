@@ -11,8 +11,9 @@ int main() {
   bool running = renderer.Setup();
   auto lastTime = std::chrono::high_resolution_clock::now();
   softbody::Vector<float, 2> mouse_position;
-  softbody::point* selected_point = nullptr;
-  bool is_point_selected = false;
+  softbody::Vector<float, 2> mouse_prev_position;
+  // softbody::point* selected_point = nullptr;
+  // bool is_point_selected = false;
 
   // engine.add_point({400.0f, 100.0f});  // Center top
   // engine.add_point({300.0f, 200.0f});  // Left
@@ -47,29 +48,32 @@ int main() {
         case SDL_MOUSEMOTION:
           mouse_position = {static_cast<float>(event.button.x),
                             static_cast<float>(event.button.y)};
-          if (is_point_selected) selected_point->position = mouse_position;
+          if (engine.is_point_selected)
+            engine.selected_point->position = mouse_position;
           break;
 
         case SDL_MOUSEBUTTONDOWN:
           if (event.button.button == SDL_BUTTON_LEFT) {
+            mouse_prev_position = mouse_position;
             for (auto& point : engine.points) {
-              if (magnitude(point.position - mouse_position) <= 20) {
-                is_point_selected = true;
-                selected_point = &point;
+              if (magnitude(point.position - mouse_position) <=
+                  engine.point_radius) {
+                engine.is_point_selected = true;
+                engine.selected_point = &point;
                 break;
               }
             }
-            if (!is_point_selected) engine.add_point(mouse_position);
+            if (!engine.is_point_selected) engine.add_point(mouse_position);
           }
           break;
         case SDL_MOUSEBUTTONUP: {
-          if (is_point_selected) {
+          if (engine.is_point_selected) {
             Vector<float, 2> mouse_up_position = mouse_position;
             Vector<float, 2> velocity =
-                (mouse_up_position - mouse_position) * 10.f;
-            selected_point->velocity = velocity;
-            is_point_selected = false;
-            selected_point = nullptr;
+                (mouse_up_position - mouse_prev_position) * 5.f;
+            engine.selected_point->velocity = velocity;
+            engine.is_point_selected = false;
+            engine.selected_point = nullptr;
           }
         } break;
       }

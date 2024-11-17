@@ -7,13 +7,17 @@ namespace softbody {
 
 struct engine {
   std::vector<softbody::point> points;
+  point* selected_point = nullptr;
+  bool is_point_selected = false;
   Vector<float, 2> gravity{0.f, 681.f};
   float const elasticity = 0.5f;
   float const friction = 0.8f;
   float const floor_height = 750.f;
+  uint8_t point_radius = 20;
 
   void update(float dt) {
     for (auto& p : points) {
+      if (&p == selected_point) continue;
       p.velocity += gravity * dt;
       p.position += p.velocity * dt;
 
