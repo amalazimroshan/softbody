@@ -10,12 +10,14 @@ int main() {
 
   bool running = renderer.Setup();
   auto lastTime = std::chrono::high_resolution_clock::now();
-  int mouse_x, mouse_y;
+  softbody::Vector<float, 2> mouse_position;
+  softbody::point* selected_point = nullptr;
+  bool is_point_selected = false;
 
   // engine.add_point({400.0f, 100.0f});  // Center top
   // engine.add_point({300.0f, 200.0f});  // Left
   // engine.add_point({500.0f, 200.0f});  // Right
-
+  using namespace softbody;
   while (running) {
     for (SDL_Event event; SDL_PollEvent(&event);) {
       switch (event.type) {
@@ -23,22 +25,53 @@ int main() {
           running = false;
           break;
         case SDL_KEYDOWN:
-          if (event.key.keysym.sym == SDLK_ESCAPE) running = false;
-          if (event.key.keysym.sym == SDLK_UP)
-            engine.gravity = {0.f, -981.f};
-          else
-            engine.gravity = {0.f, 981.f};
+          switch (event.key.keysym.sym) {
+            case SDLK_ESCAPE:
+              running = false;
+              break;
+            case SDLK_RIGHT:
+              engine.gravity = {981.f, 0.f};
+              break;
+            case SDLK_LEFT:
+              engine.gravity = {-981.f, 0.f};
+              break;
+            case SDLK_DOWN:
+              engine.gravity = {0.f, 981.f};
+              break;
+            default:
+              engine.gravity = {0.f, -981.f};
+              break;
+          }
           break;
+
+        case SDL_MOUSEMOTION:
+          mouse_position = {static_cast<float>(event.button.x),
+                            static_cast<float>(event.button.y)};
+          if (is_point_selected) selected_point->position = mouse_position;
+          break;
+
         case SDL_MOUSEBUTTONDOWN:
           if (event.button.button == SDL_BUTTON_LEFT) {
-            mouse_x = event.button.x;
-            mouse_y = event.button.y;
-
-            engine.add_point(
-                {static_cast<float>(mouse_x), static_cast<float>(mouse_y)});
+            for (auto& point : engine.points) {
+              if (magnitude(point.position - mouse_position) <= 20) {
+                is_point_selected = true;
+                selected_point = &point;
+                break;
+              }
+            }
+            if (!is_point_selected) engine.add_point(mouse_position);
           }
-
           break;
+        case SDL_MOUSEBUTTONUP: {
+          if (is_point_selected) {
+            Vector<float, 2> mouse_up_position = mouse_position;
+            Vector<float, 2> velocity =
+                (mouse_up_position - mouse_position) * 10.f;
+            selected_point->velocity = velocity;
+            is_point_selected = false;
+            selected_point = nullptr;
+          }
+        } break;
       }
     }
 
@@ -51,7 +84,6 @@ int main() {
     renderer.ClearScreen(0xFF000816);
 
     // rendering
-    using namespace softbody;
 
     renderer.DrawLine(0, 750, renderer.GetWindowWidth(), 750,
                       Renderer::RGB(255, 255, 255));

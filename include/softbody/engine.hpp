@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 #include <softbody/collision.hpp>
 #include <softbody/point.hpp>
 #include <vector>
@@ -6,7 +7,7 @@ namespace softbody {
 
 struct engine {
   std::vector<softbody::point> points;
-  Vector<float, 2> gravity{0.f, 981.f};
+  Vector<float, 2> gravity{0.f, 681.f};
   float const elasticity = 0.5f;
   float const friction = 0.8f;
   float const floor_height = 750.f;
@@ -17,10 +18,10 @@ struct engine {
       p.position += p.velocity * dt;
 
       collision c = find_collision(p.position);
+      // std::cout << c.depth << std::endl;
       if (c.depth < 0.f) continue;
 
       p.position += c.normal * c.depth;
-
       // Resolve velocity
       auto vn = c.normal * dot(c.normal, p.velocity);  // Normal component
       auto vt = p.velocity - vn;                       // Tangential component
