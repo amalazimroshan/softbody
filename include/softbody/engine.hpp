@@ -19,6 +19,7 @@ struct engine {
   float const friction = 0.8f;
   float const floor_height = 750.f;
   uint8_t point_radius = 20;
+  float spring_force = 70.f;
 
   std::vector<distance_constraint> constraints;
 
@@ -45,7 +46,6 @@ struct engine {
     }
 
     // constraint
-    int constraint_damping = 10;
     for (auto const& c : constraints) {
       auto& p0 = points[c.index0].position;
       auto& p1 = points[c.index1].position;
@@ -54,11 +54,10 @@ struct engine {
       auto distance = magnitude(delta);
 
       auto required_delta = delta * (c.distance / distance);
-      float damping_factor = 1.f - std::exp(-constraint_damping * dt);
-      auto offset = (required_delta - delta) * damping_factor;
+      auto force = (required_delta - delta) * static_cast<float>(spring_force);
 
-      p0 -= offset / static_cast<float>(2.0);
-      p1 += offset / static_cast<float>(2.0);
+      points[c.index0].velocity -= force * dt;
+      points[c.index1].velocity += force * dt;
     }
   }
 
