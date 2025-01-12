@@ -12,12 +12,7 @@ int main() {
   auto lastTime = std::chrono::high_resolution_clock::now();
   softbody::Vector<float, 2> mouse_position;
   softbody::Vector<float, 2> mouse_prev_position;
-  // softbody::point* selected_point = nullptr;
-  // bool is_point_selected = false;
 
-  // engine.add_point({400.0f, 100.0f});  // Center top
-  // engine.add_point({300.0f, 200.0f});  // Left
-  // engine.add_point({500.0f, 200.0f});  // Right
   using namespace softbody;
   while (running) {
     for (SDL_Event event; SDL_PollEvent(&event);) {
@@ -46,6 +41,7 @@ int main() {
           break;
 
         case SDL_MOUSEMOTION:
+          mouse_prev_position = mouse_position;
           mouse_position = {static_cast<float>(event.button.x),
                             static_cast<float>(event.button.y)};
           if (engine.is_point_selected)
@@ -54,7 +50,6 @@ int main() {
 
         case SDL_MOUSEBUTTONDOWN:
           if (event.button.button == SDL_BUTTON_LEFT) {
-            mouse_prev_position = mouse_position;
             for (auto& point : engine.points) {
               if (magnitude(point.position - mouse_position) <=
                   engine.point_radius) {
@@ -68,9 +63,8 @@ int main() {
           break;
         case SDL_MOUSEBUTTONUP: {
           if (engine.is_point_selected) {
-            Vector<float, 2> mouse_up_position = mouse_position;
             Vector<float, 2> velocity =
-                (mouse_up_position - mouse_prev_position) * 5.f;
+                (mouse_position - mouse_prev_position) * 70.f;
             engine.selected_point->velocity = velocity;
             engine.is_point_selected = false;
             engine.selected_point = nullptr;

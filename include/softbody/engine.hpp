@@ -17,7 +17,7 @@ struct engine {
 
   void update(float dt) {
     for (auto& p : points) {
-      if (&p == selected_point) continue;
+      if (&p == selected_point) continue;  // no update if it's selected
       p.velocity += gravity * dt;
       p.position += p.velocity * dt;
 
