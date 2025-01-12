@@ -14,6 +14,11 @@ int main() {
   softbody::Vector<float, 2> mouse_prev_position;
 
   using namespace softbody;
+
+  engine.add_point(Vector<float, 2>(100, 100));
+  engine.add_point(Vector<float, 2>(200, 200));
+  engine.constraints.push_back({0, 1, 100});
+
   while (running) {
     for (SDL_Event event; SDL_PollEvent(&event);) {
       switch (event.type) {
@@ -59,6 +64,14 @@ int main() {
               }
             }
             if (!engine.is_point_selected) engine.add_point(mouse_position);
+          }
+
+          if (event.button.button == SDL_BUTTON_RIGHT) {
+            for (auto& point : engine.points) {
+              if (magnitude(point.position - mouse_position) <=
+                  engine.point_radius) {
+              }
+            }
           }
           break;
         case SDL_MOUSEBUTTONUP: {
