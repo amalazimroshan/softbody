@@ -12,21 +12,22 @@ struct distance_constraint {
 
 struct engine {
   std::vector<softbody::point> points;
-  point* selected_point = nullptr;
+  int selected_point_index = -1;
   bool is_point_selected = false;
   Vector<float, 2> gravity{0.f, 681.f};
   float const elasticity = 0.5f;
   float const friction = 0.8f;
   float const floor_height = 750.f;
   uint8_t point_radius = 20;
-  float spring_force = 70.f;
+  float spring_force = 10000.f;
 
   std::vector<distance_constraint> constraints;
 
   void update(float dt) {
-    for (auto& p : points) {
-      if (&p == selected_point) continue;  // no update if it's selected
+    for(size_t i=0;i<points.size();i++){
+      if (i == selected_point_index) continue;  // no update if it's selected
 
+      point &p = points[i];
       // velocity integration
       p.velocity += gravity * dt;
       p.position += p.velocity * dt;
@@ -49,20 +50,36 @@ struct engine {
     for (auto const& c : constraints) {
       auto& p0 = points[c.index0].position;
       auto& p1 = points[c.index1].position;
+      auto& v0 = points[c.index0].velocity;
+      auto& v1 = points[c.index1].velocity;
 
       auto delta = p1 - p0;
       auto distance = magnitude(delta);
+      auto direction = delta / distance;
 
-      auto required_delta = delta * (c.distance / distance);
-      auto force = (required_delta - delta) * static_cast<float>(spring_force);
+      auto required_delta = direction * c.distance;
+      auto force = (required_delta - delta) * spring_force;
 
-      points[c.index0].velocity -= force * dt;
-      points[c.index1].velocity += force * dt;
+      // if(!points[c.index0].fixed) 
+      v0 -= force * dt;
+      // if(!points[c.index1].fixed) 
+      v1 += force * dt;
+
+      float vrel = dot(v1-v0, direction);
+      float damping_factor = expf(-spring_force * dt);
+      float new_vrel = vrel * damping_factor;
+      float vrel_delta = new_vrel - vrel;
+
+      auto impulse = direction * (vrel_delta * 0.5f);
+      // if(!points[c.index0].fixed) 
+      v0 -= impulse;
+      // if(!points[c.index1].fixed) 
+      v1 += impulse;
     }
   }
 
   void add_point(const Vector<float, 2>& pos) {
-    points.push_back({pos, Vector<float, 2>{0.0f, 0.0f}});
+    points.push_back({pos, Vector<float, 2>{0.0f, 0.0f}, false});
   }
 };
 

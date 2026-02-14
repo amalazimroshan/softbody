@@ -49,17 +49,21 @@ int main() {
           mouse_prev_position = mouse_position;
           mouse_position = {static_cast<float>(event.button.x),
                             static_cast<float>(event.button.y)};
-          if (engine.is_point_selected)
-            engine.selected_point->position = mouse_position;
+          if (engine.is_point_selected){
+            point& selected_point = engine.points[engine.selected_point_index];
+            selected_point.position = mouse_position;
+            selected_point.fixed = true;
+          }
           break;
 
         case SDL_MOUSEBUTTONDOWN:
           if (event.button.button == SDL_BUTTON_LEFT) {
-            for (auto& point : engine.points) {
-              if (magnitude(point.position - mouse_position) <=
+            for (size_t i=0;i<engine.points.size(); i++) {
+              point& p = engine.points[i];
+              if (magnitude( p.position - mouse_position) <=
                   engine.point_radius) {
                 engine.is_point_selected = true;
-                engine.selected_point = &point;
+                engine.selected_point_index = i;
                 break;
               }
             }
@@ -78,9 +82,12 @@ int main() {
           if (engine.is_point_selected) {
             Vector<float, 2> velocity =
                 (mouse_position - mouse_prev_position) * 70.f;
-            engine.selected_point->velocity = velocity;
+
+                point& selected_point = engine.points[engine.selected_point_index];
+            selected_point.velocity = velocity;
+            selected_point.fixed = false;
             engine.is_point_selected = false;
-            engine.selected_point = nullptr;
+            engine.selected_point_index = -1;
           }
         } break;
       }

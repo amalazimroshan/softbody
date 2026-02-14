@@ -12,8 +12,7 @@ file(GLOB_RECURSE SOFTBODY_HEADERS "include/*.hpp")
 file(GLOB_RECURSE SOFTBODY_SOURCES "source/*.cpp")
 
 # Set build type and flags
-set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pg -O0")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
 
 # Define the executable
 add_executable(softbody
