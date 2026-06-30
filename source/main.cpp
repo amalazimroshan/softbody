@@ -49,11 +49,12 @@ int main() {
           mouse_prev_position = mouse_position;
           mouse_position = {static_cast<float>(event.button.x),
                             static_cast<float>(event.button.y)};
-          if (engine.is_point_selected){
-            point& selected_point = engine.points[engine.selected_point_index];
-            selected_point.position = mouse_position;
-            selected_point.fixed = true;
-          }
+          // if (engine.is_point_selected){
+          //   point& selected_point = engine.points[engine.selected_point_index];
+          //   selected_point.position = mouse_position;
+          //   selected_point.velocity = (mouse_position - selected_point.position);
+          //   selected_point.fixed = true;
+          // }
           break;
 
         case SDL_MOUSEBUTTONDOWN:
@@ -98,7 +99,7 @@ int main() {
     // std::cout << dt << std::endl;
     lastTime = currentTime;
 
-    engine.update(dt);
+    engine.update(dt, mouse_position);
     renderer.ClearScreen(0xFF000816);
 
     // rendering

@@ -19,13 +19,24 @@ struct engine {
   float const friction = 0.8f;
   float const floor_height = 750.f;
   uint8_t point_radius = 20;
-  float spring_force = 10000.f;
+  float spring_force = 1000.f;
 
   std::vector<distance_constraint> constraints;
 
-  void update(float dt) {
+  void update(float dt, Vector<float, 2> mouse_position) {
+    if(selected_point_index >= 0){
+      point& p = points[selected_point_index];
+      float tracking_stiffnes = 30.f;
+      p.velocity = (mouse_position - p.position) * tracking_stiffnes;
+    }
+
     for(size_t i=0;i<points.size();i++){
-      if (i == selected_point_index) continue;  // no update if it's selected
+      if (i == selected_point_index) 
+      {
+        point& p = points[selected_point_index];
+        p.position += p.velocity * dt;
+        continue;  // no update if it's selected
+      }
 
       point &p = points[i];
       // velocity integration
